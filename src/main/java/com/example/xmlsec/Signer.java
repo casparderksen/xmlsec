@@ -20,6 +20,7 @@ import org.apache.xml.security.keys.content.KeyName;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.utils.Constants;
 import org.apache.xml.security.utils.ElementProxy;
+import org.apache.xml.security.utils.resolver.implementations.ResolverDirectHTTP;
 import org.apache.xml.security.utils.resolver.implementations.ResolverLocalFilesystem;
 import org.w3c.dom.Document;
 
@@ -55,6 +56,7 @@ final class Signer {
         doc.appendChild(signature.getElement());
 
         signature.addResourceResolver(new ResolverLocalFilesystem());
+        signature.addResourceResolver(new ResolverDirectHTTP());
 
         signature.addDocument(
                 relativeUri,
