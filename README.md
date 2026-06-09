@@ -71,3 +71,27 @@ java -jar target/xmlsec-poc.jar verify signed.xml keystore.p12
 ```
 
 Formatting differs (Java omits whitespace inside `<ds:SignedInfo>`); signature semantics are identical.
+
+## How detached signatures work
+
+A detached signature is stored separately from the content it covers. The `<ds:Reference>` element inside the signature file carries a URI pointing to the signed content:
+
+```xml
+<ds:Reference URI="data.xml">
+  <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+  <ds:DigestValue>...</ds:DigestValue>
+</ds:Reference>
+```
+
+The signature covers `<ds:SignedInfo>`, which contains both the `<ds:Reference>` URI and the digest. This means two things are cryptographically bound:
+
+- **Content integrity** — the digest value ensures the bytes at the URI have not changed since signing.
+- **Reference identity** — the URI string itself is part of the signed data, so it cannot be swapped out after the fact.
+
+### Portability via relative URIs
+
+This tool writes a relative URI (e.g. `data.xml`) rather than an absolute filesystem path. The verifier resolves it relative to the location of the signature file, so the signature–payload pair can be moved or copied anywhere and verification still works. An absolute path like `/home/user/projects/xmlsec/data.xml` would break the moment the files were relocated.
+
+### Generalizing to HTTP
+
+Because the URI scheme is irrelevant to the cryptographic operations, the same mechanism works over HTTP. Replacing `URI="data.xml"` with `URI="https://example.com/document.xml"` produces a signature that a verifier can check by fetching the document over the network. Apache Santuario supports this via pluggable `ResourceResolver` implementations; no changes to the signing or verification logic are required.
