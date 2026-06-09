@@ -17,6 +17,29 @@ mvn test          # tests only
 mvn package -DskipTests
 ```
 
+## Tests
+
+Signing an verification is validated via automated tests. Each test gets a fresh PKCS#12 keystore generated at runtime (`TestKeystore`) — no key material is checked in.
+
+### `SignVerifyTest` — file I/O round-trip
+
+- **`signProducesVerifiableSignature`** — sign `data.xml`, then verify the output. Happy path.
+- **`tamperedPayloadFailsVerification`** — sign, mutate the payload on disk, re-verify. Confirms the detached digest catches payload tampering.
+- **`outputUsesDsPrefixAndExpectedAlgorithms`** — parses the signature DOM and asserts the xmlsec1 wire-format constraints: `ds:` prefix on `Signature`, `rsa-sha256` `SignatureMethod`, `sha256` `DigestMethod`, relative `Reference URI="data.xml"`, and non-blank `DigestValue` / `SignatureValue`.
+
+### `HttpVerifyTest` — HTTP resolution
+
+Spins up a loopback `HttpServer` per test serving the temp workspace, and mirrors the served files into `target/http-test-downloads/<testName>/` so they can be inspected after the run.
+
+- **`verifyOverHttpWithRelativeUri`** — sign, serve `signed.xml` + `data.xml`, verify via `http://127.0.0.1:<port>/signed.xml`. Exercises `Verifier.verify(URL, ...)` and confirms relative-URI resolution against the signature's HTTP base URL.
+- **`tamperedPayloadOverHttpFailsVerification`** — same flow with the payload mutated post-sign; verification must fail.
+
+### Not covered by automated tests
+
+- xmlsec1 CLI parity — manual only (see "Cross-tool verification" below).
+- CLI entrypoint and interactive password prompt.
+- Wrong-key / missing-alias / expired-cert failure modes.
+
 ## Generate test material
 
 ```bash
