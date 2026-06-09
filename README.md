@@ -174,3 +174,8 @@ A verifier that dereferences `Reference URI` over the network — especially one
 - **Denial of service** — payload may be unreachable, slow, huge, or an infinite stream. Mitigations: timeouts, response-size cap, bounded redirects.
 - **XXE / entity expansion** — parse fetched XML with a hardened parser (DTDs and external entities disabled, `FEATURE_SECURE_PROCESSING` on); otherwise attacker payload can read local files or blow up memory before signature check runs.
 - **Privacy leak** — every fetch reveals verifier IP, TLS fingerprint, and timing to the URI's host, even when verification fails. Mitigations: controlled egress proxy, or URI allowlist.
+
+## AI Disclosure
+
+This project uses artificial intelligence tools for research, coding, or documentation. All final content
+was  reviewed, edited, and validated by the human author before publication.
